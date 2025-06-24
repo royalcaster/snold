@@ -3,11 +3,26 @@
 
 #include <Adafruit_GFX.h>
 #include "constants.h"
+#include <stdint.h>
 
 // --- IMAGE FUNCTION DECLARATIONS ---
+
+// Standard drawing functions
 void drawBitmap(Adafruit_GFX* display, const uint16_t* bitmap, int x, int y, int width, int height);
+void drawBitmapFast(Adafruit_GFX* display, const uint16_t* bitmap, int x, int y, int width, int height);
 void drawBitmapFromArray(Adafruit_GFX* display, const uint16_t* bitmap, int x, int y, int width, int height);
-void showImage(const uint16_t* bitmap, int width, int height, int x = 0, int y = 0);
+
+// Interlaced rendering methods
+void drawBitmapInterlaced(Adafruit_GFX* display, const uint16_t* bitmap, int x, int y, int width, int height);
+void drawBitmapHybridInterlaced(Adafruit_GFX* display, const uint16_t* bitmap, int x, int y, int width, int height);
+void drawBitmapInterlacedTimed(Adafruit_GFX* display, const uint16_t* bitmap, int x, int y, int width, int height, uint8_t delayMs = 0);
+
+// Ultra-optimized performance methods
+inline void drawBitmapUltraFast(Adafruit_GFX* display, const uint16_t* bitmap, int x, int y, int width, int height);
+void drawBitmapChunked(Adafruit_GFX* display, const uint16_t* bitmap, int x, int y, int width, int height);
+
+// Display convenience functions
+void showImage(const uint16_t* bitmap, int width, int height, int x, int y);
 void showCenteredImage(const uint16_t* bitmap, int width, int height);
 
 // --- EXAMPLE IMAGE DECLARATIONS ---

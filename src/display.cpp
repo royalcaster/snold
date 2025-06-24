@@ -1,4 +1,5 @@
 #include "display.h"
+#include <SPI.h>
 
 // --- HARDWARE OBJECT DEFINITION ---
 Adafruit_SSD1351 display = Adafruit_SSD1351(
@@ -7,15 +8,83 @@ Adafruit_SSD1351 display = Adafruit_SSD1351(
 // --- FUNCTION IMPLEMENTATIONS ---
 
 /**
- * @brief Initializes the OLED display (SSD1351)
+ * @brief Initializes the OLED display (SSD1351) with optimized SPI settings
  */
 void initializeDisplay() {
+  // PERFORMANCE OPTIMIZATION: Set maximum SPI speed before display initialization
+  // SSD1351 supports up to 20MHz SPI clock (datasheet spec)
+  // ESP32 can handle this speed reliably with proper wiring
+  SPI.setFrequency(20000000);  // 20MHz - maximum stable speed for SSD1351
+  SPI.setDataMode(SPI_MODE0);  // Clock polarity/phase optimization
+  SPI.setBitOrder(MSBFIRST);   // Most significant bit first
+  
+  display.begin();
+  
+  // Clear screen immediately for faster startup
+  display.fillScreen(BLACK);
+  display.setCursor(0, 0);
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  
+  Serial.println("Display initialized with 20MHz SPI!");
+}
+
+/**
+ * @brief Optimized display initialization with custom SPI speed
+ * @param spiSpeed Custom SPI frequency in Hz (default: 20MHz)
+ */
+void initializeDisplayCustomSpeed(uint32_t spiSpeed) {
+  Serial.printf("Initializing display with %dMHz SPI...\n", spiSpeed / 1000000);
+  
+  SPI.setFrequency(spiSpeed);
+  SPI.setDataMode(SPI_MODE0);
+  SPI.setBitOrder(MSBFIRST);
+  
   display.begin();
   display.fillScreen(BLACK);
   display.setCursor(0, 0);
   display.setTextSize(1);
   display.setTextColor(WHITE);
-  Serial.println("Display initialized!");
+  
+  Serial.printf("Display ready at %dMHz SPI\n", spiSpeed / 1000000);
+}
+
+/**
+ * @brief Performance test function to measure display refresh rates
+ */
+void benchmarkDisplay() {
+  Serial.println("=== DISPLAY PERFORMANCE BENCHMARK ===");
+  
+  uint32_t startTime, endTime;
+  const int TEST_ITERATIONS = 10;
+  
+  // Test 1: fillScreen performance
+  startTime = millis();
+  for (int i = 0; i < TEST_ITERATIONS; i++) {
+    display.fillScreen(i % 2 ? WHITE : BLACK);
+  }
+  endTime = millis();
+  float fillScreenTime = (endTime - startTime) / (float)TEST_ITERATIONS;
+  Serial.printf("fillScreen(): %.1fms per frame (%.1f FPS)\n", fillScreenTime, 1000.0 / fillScreenTime);
+  
+  // Test 2: drawRGBBitmap performance (simulated with small bitmap)
+  uint16_t testBitmap[128*4]; // 4 rows of test data
+  for (int i = 0; i < 128*4; i++) {
+    testBitmap[i] = 0xF800; // Red pixels
+  }
+  
+  startTime = millis();
+  for (int i = 0; i < TEST_ITERATIONS; i++) {
+    for (int row = 0; row < 32; row += 4) { // Draw 4-row strips
+      display.drawRGBBitmap(0, row, testBitmap, 128, 4);
+    }
+  }
+  endTime = millis();
+  float bitmapTime = (endTime - startTime) / (float)TEST_ITERATIONS;
+  Serial.printf("drawRGBBitmap(): %.1fms per frame (%.1f FPS)\n", bitmapTime, 1000.0 / bitmapTime);
+  
+  Serial.println("=== BENCHMARK COMPLETE ===");
+  display.fillScreen(BLACK);
 }
 
 /**
