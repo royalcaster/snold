@@ -24,4 +24,10 @@ void showCustomText(const char* text, int x, int y, uint16_t color = WHITE, uint
 void showCustomMessage(const char* message, uint16_t color = WHITE, uint8_t fontSize = FONT_SIZE_8);
 void displayFontDemo();
 
+// DMA and performance functions
+void initializeNativeSPIDMA();
+void sendDataDMA(const uint8_t* data, size_t length, bool wait_for_completion);
+void sendImageDMA(const uint16_t* imageData, int width, int height);
+void benchmarkDMAPerformance();
+
 #endif // DISPLAY_H 

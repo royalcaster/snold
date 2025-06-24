@@ -29,4 +29,10 @@ void showCenteredImage(const uint16_t* bitmap, int width, int height);
 // You can add your image arrays here
 extern const uint16_t exampleImage[]; // Example 32x32 image
 
+// DMA and advanced optimization functions
+void drawBitmapDMA(const uint16_t* bitmap, int x, int y, int width, int height);
+void drawBitmapMultiCore(Adafruit_GFX* display, const uint16_t* bitmap, int x, int y, int width, int height);
+void drawBitmapDirectMemory(const uint16_t* bitmap, int x, int y, int width, int height);
+void drawBitmapAdaptive(Adafruit_GFX* display, const uint16_t* bitmap, int x, int y, int width, int height);
+
 #endif // IMAGES_H 
