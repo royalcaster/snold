@@ -7,11 +7,21 @@
 
 // Screen management system
 #include "screens/screen_manager.h"
-#include "screens/welcome_screen.h"
-#include "screens/text_screen.h"
-#include "screens/image_screen.h"
-#include "screens/icon_screen.h"
-#include "screens/text_icon_screen.h"
+#include "screens/animated_image_screen.h"
+
+// Include all RGB565 image headers
+#include "../include/img_welcome_a_rgb565.h"
+#include "../include/img_welcome_b_rgb565.h"
+#include "../include/img_play_a_rgb565.h"
+#include "../include/img_play_b_rgb565.h"
+#include "../include/img_walk_a_rgb565.h"
+#include "../include/img_walk_b_rgb565.h"
+#include "../include/img_throw_a_rgb565.h"
+#include "../include/img_throw_b_rgb565.h"
+#include "../include/img_rocket_a_rgb565.h"
+#include "../include/img_rocket_b_rgb565.h"
+#include "../include/img_shake_a_rgb565.h"
+#include "../include/img_shake_b_rgb565.h"
 
 // Global screen manager
 ScreenManager* screenManager = nullptr;
@@ -32,15 +42,19 @@ void setup() {
   // Initialize screen manager
   screenManager = new ScreenManager(&display);
   
-  // Add screens to the manager
-  screenManager->addScreen("welcome", new WelcomeScreen());
-  screenManager->addScreen("text1", new TextScreen("HELLO WORLD", GREEN));
-  screenManager->addScreen("text2", new TextScreen("ESP32 OLED", YELLOW));
+  // Add animated screens for each image pair (all images are 128x128)
+  // Using the correct RGB565 arrays and variable names
+  screenManager->addScreen("welcome", new AnimatedImageScreen("welcome", welcome_A, welcome_B, 128, 128));
+  screenManager->addScreen("play", new AnimatedImageScreen("play", play_A, play_B, 128, 128));
+  screenManager->addScreen("walk", new AnimatedImageScreen("walk", walk_A, walk_B, 128, 128));
+  screenManager->addScreen("throw", new AnimatedImageScreen("throw", throw_A, throw_B, 128, 128));
+  screenManager->addScreen("rocket", new AnimatedImageScreen("rocket", rocket_A, rocket_B, 128, 128));
+  screenManager->addScreen("shake", new AnimatedImageScreen("shake", shake_A, shake_B, 128, 128));
   
-  // Show welcome screen immediately (no transition for first screen)
+  // Show welcome screen immediately for testing
   screenManager->showScreen("welcome");
   
-  Serial.println("Screen management system initialized!");
+  Serial.println("Animated image screens initialized with RGB565 format!");
 }
 
 // --- MAIN LOOP ---
@@ -50,13 +64,14 @@ void loop() {
     screenManager->update();
   }
   
-  // Simple demo: cycle through screens every 5 seconds
+  // Simple demo: cycle through animated screens every 5 seconds
   static unsigned long lastSwitch = 0;
   static int currentScreenIndex = 0;
-  const char* screens[] = {"welcome", "text1", "text2"};
+  const char* screens[] = {"welcome", "play", "walk", "throw", "rocket", "shake"};
+  const int numScreens = sizeof(screens) / sizeof(screens[0]);
   
   if (millis() - lastSwitch > 5000) {
-    currentScreenIndex = (currentScreenIndex + 1) % 3;
+    currentScreenIndex = (currentScreenIndex + 1) % numScreens;
     
     Serial.printf("Switching to screen %d: %s\n", currentScreenIndex, screens[currentScreenIndex]);
     
@@ -65,5 +80,5 @@ void loop() {
     lastSwitch = millis();
   }
   
-  delay(100); // Slightly longer delay
+  delay(100);
 } 
