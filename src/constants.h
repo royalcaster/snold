@@ -5,6 +5,9 @@
 // Sea level pressure in hPa. Used for altitude calculation.
 #define SEALEVELPRESSURE_HPA 1013.25
 
+// Barometer read rate in Hz
+#define BAROMETER_READ_RATE_HZ 10
+
 // Color definitions (RGB565 format for SSD1351)
 #define BLACK 0x0000
 #define BLUE 0x001F

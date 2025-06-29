@@ -20,10 +20,10 @@ void initializeBarometer() {
   }
 
   // Configure BMP388 sensor settings for optimal performance
-  bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
+  bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_2X);
   bmp.setPressureOversampling(BMP3_OVERSAMPLING_4X);
   bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
-  bmp.setOutputDataRate(BMP3_ODR_50_HZ);
+  bmp.setOutputDataRate(BMP3_ODR_25_HZ);
   
   Serial.println("BMP388 sensor configured successfully!");
 }

@@ -32,8 +32,7 @@ void AnimatedImageScreen::update() {
         lastToggle = currentTime;
         setDirty(true); // Mark for redraw - this ensures continuous animation
         
-        // Debug output to monitor the animation
-        Serial.printf("AnimatedImageScreen '%s': Showing image %c (HYBRID INTERLACED)\n", name, showingA ? 'A' : 'B');
+        // Serial.printf("AnimatedImageScreen '%s': Showing image %c (HYBRID INTERLACED)\n", name, showingA ? 'A' : 'B');
     }
 }
 
