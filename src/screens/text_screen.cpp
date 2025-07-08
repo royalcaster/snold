@@ -25,25 +25,15 @@ namespace {
         return -1; // Return -1 for characters not in the font
     }
 
-    void getFatpixelTextBounds(const char* text, uint16_t* w, uint16_t* h) {
-        uint16_t totalWidth = 0;
-        for (int i = 0; text[i] != '\0'; i++) {
-            int index = getCharIndex(text[i]);
-            if (index >= 0 && index < FONT_CHAR_COUNT) {
-                totalWidth += customFont[index].width;
-            }
-        }
-        *w = totalWidth;
-        *h = FONT_SIZE; // Use the max font height
-    }
 }
 
 TextScreen::TextScreen(const char* text, uint16_t color, int x, int y)
     : text(text), color(color), x(x), y(y) {}
 
 void TextScreen::render(Adafruit_GFX* display) {
+    int16_t text_x, text_y;
     uint16_t textW, textH;
-    getFatpixelTextBounds(text, &textW, &textH);
+    getFatpixelTextBounds(text, 0, 0, &text_x, &text_y, &textW, &textH);
     
     int finalX = (x == -1) ? (display->width() - textW) / 2 : x;
     int finalY = (y == -1) ? (display->height() - textH) / 2 : y;
