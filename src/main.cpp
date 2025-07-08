@@ -34,7 +34,7 @@ unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
 int lastButtonState = HIGH;
 
-#define THROW_UP_THRESHOLD 1.5  // m/s, adjust as needed (made more generous)
+#define THROW_UP_THRESHOLD 2  // m/s, adjust as needed (made more generous)
 #define THROW_COOLDOWN_MS 1000  // 1 second cooldown between throws
 
 // --- SETUP ---
