@@ -37,6 +37,13 @@ int lastButtonState = HIGH;
 #define THROW_UP_THRESHOLD 2  // m/s, adjust as needed (made more generous)
 #define THROW_COOLDOWN_MS 1000  // 1 second cooldown between throws
 
+// Screen cycling system - global variables
+static unsigned long lastScreenSwitchTime = 0;
+static int currentScreenIndex = 0;
+const unsigned long SCREEN_DISPLAY_DURATION = 5000; // 5 seconds per screen
+const char* cyclableScreens[] = {"welcome", "play", "walk", "throw", "rocket", "shake"};
+const int numCyclableScreens = sizeof(cyclableScreens) / sizeof(cyclableScreens[0]);
+
 // --- SETUP ---
 void setup() {
   Serial.begin(115200);
@@ -54,7 +61,7 @@ void setup() {
   screenManager = new ScreenManager(&display);
   
   // Add animated screens for each image pair (all images are 128x128)
-  // Using the correct RGB565 arrays and variable names
+  // Using the updated RGB565 arrays from img_new
   screenManager->addScreen("welcome", new AnimatedImageScreen("welcome", welcome_A, welcome_B, 128, 128));
   screenManager->addScreen("play", new AnimatedImageScreen("play", play_A, play_B, 128, 128));
   screenManager->addScreen("walk", new AnimatedImageScreen("walk", walk_A, walk_B, 128, 128));
@@ -66,10 +73,12 @@ void setup() {
   resultScreen = new ResultScreen("result", "0.00 m");
   screenManager->addScreen("result", resultScreen);
 
-  // Show throw screen immediately to start listening for throws
-  screenManager->showScreen("throw");
+  // Initialize screen cycling - start with the first screen
+  currentScreenIndex = 0;
+  lastScreenSwitchTime = millis();
+  screenManager->showScreen(cyclableScreens[currentScreenIndex]);
   
-  Serial.println("Animated image screens initialized with RGB565 format!");
+  Serial.printf("Animated image screens initialized with RGB565 format! Starting cycling with: %s\n", cyclableScreens[currentScreenIndex]);
 }
 
 // --- MAIN LOOP ---
@@ -114,12 +123,14 @@ void loop() {
                   strcmp(currentScreen, "result") == 0 &&
                   resultScreenStartTime > 0 &&
                   millis() - resultScreenStartTime >= RESULT_DISPLAY_DURATION) {
-                // Timer expired - switch to throw screen and reset timer
+                // Timer expired - start cycling from beginning and reset timer
                 resultScreenStartTime = 0;
-                screenManager->showScreen("throw");
-                Serial.println("IDLE: Result display timeout - switching to throw screen");
+                currentScreenIndex = 0;
+                lastScreenSwitchTime = millis();
+                screenManager->showScreen(cyclableScreens[currentScreenIndex]);
+                Serial.printf("IDLE: Result display timeout - starting screen cycling with %s\n", cyclableScreens[currentScreenIndex]);
               }
-              // If result screen is showing and timer hasn't expired, do nothing
+              // If result screen is showing and timer hasn't expired, do nothing (don't cycle)
               else if (currentScreen != nullptr && 
                        strcmp(currentScreen, "result") == 0 && 
                        resultScreenStartTime > 0) {
@@ -127,20 +138,33 @@ void loop() {
                 Serial.printf("IDLE: Result screen still showing (%lu ms remaining)\n", 
                               RESULT_DISPLAY_DURATION - (millis() - resultScreenStartTime));
               }
-              // If not showing result screen, show throw screen
-              else if (currentScreen == nullptr || strcmp(currentScreen, "throw") != 0) {
-                screenManager->showScreen("throw");
-                Serial.println("IDLE: Switching to throw screen (not currently showing)");
+              // If not showing result screen, handle cycling
+              else {
+                // Check if it's time to switch to the next screen
+                if (millis() - lastScreenSwitchTime >= SCREEN_DISPLAY_DURATION) {
+                  currentScreenIndex = (currentScreenIndex + 1) % numCyclableScreens;
+                  lastScreenSwitchTime = millis();
+                  screenManager->showScreen(cyclableScreens[currentScreenIndex]);
+                  Serial.printf("IDLE: Cycling to screen %s (%d/%d)\n", cyclableScreens[currentScreenIndex], currentScreenIndex + 1, numCyclableScreens);
+                }
+                // If this is the first run or screen manager is out of sync, initialize cycling
+                else if (currentScreen == nullptr || 
+                         (strcmp(currentScreen, "result") != 0 && 
+                          strcmp(currentScreen, cyclableScreens[currentScreenIndex]) != 0)) {
+                  lastScreenSwitchTime = millis();
+                  screenManager->showScreen(cyclableScreens[currentScreenIndex]);
+                  Serial.printf("IDLE: Initializing screen cycling with %s\n", cyclableScreens[currentScreenIndex]);
+                }
               }
               
-              // Check for new throw only if not showing result screen
+              // Check for new throw regardless of which screen is showing (but not during result display)
               if (currentScreen == nullptr || strcmp(currentScreen, "result") != 0) {
                 if (verticalSpeed > THROW_UP_THRESHOLD) {
                   throwState = THROW_ACTIVE;
                   startAltitude = currentAltitude;
                   maxAltitude = currentAltitude;
                   descentCounter = 0;
-                  Serial.println("THROW STATE: ACTIVE");
+                  Serial.printf("THROW STATE: ACTIVE (detected on screen: %s)\n", currentScreen ? currentScreen : "unknown");
                 }
               }
               break;
@@ -218,25 +242,10 @@ void loop() {
   
   // --- Result screen timer check is now handled in the IDLE state above ---
 
-  // --- Screen updates and cycling ---
+  // --- Screen updates ---
   if (screenManager) {
     screenManager->update();
   }
-  
-  /*
-  // --- Screen updates and cycling ---
-  static unsigned long lastSwitch = 0;
-  static int currentScreenIndex = 0;
-  const char* screens[] = {"welcome", "play", "walk", "throw", "rocket", "shake"};
-  const int numScreens = sizeof(screens) / sizeof(screens[0]);
-  
-  if (millis() - lastSwitch > 5000) {
-    currentScreenIndex = (currentScreenIndex + 1) % numScreens;
-    // Serial.printf("Switching to screen %d: %s\n", currentScreenIndex, screens[currentScreenIndex]);
-    screenManager->showScreen(screens[currentScreenIndex]);
-    lastSwitch = millis();
-  }
-  */
   
   delay(10);
 } 

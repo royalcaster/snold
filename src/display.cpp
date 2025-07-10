@@ -216,6 +216,7 @@ void initializeDisplay() {
     SPI.setBitOrder(MSBFIRST);   // Most significant bit first
     
     display.begin();
+    display.setRotation(1);  // Rotate 90 degrees clockwise
     
     // Clear screen immediately for faster startup
     display.fillScreen(BLACK);
@@ -238,6 +239,7 @@ void initializeDisplayCustomSpeed(uint32_t spiSpeed) {
     SPI.setBitOrder(MSBFIRST);
     
     display.begin();
+    display.setRotation(1);  // Rotate 90 degrees clockwise
     display.fillScreen(BLACK);
     display.setCursor(0, 0);
     display.setTextSize(1);
