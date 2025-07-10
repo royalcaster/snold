@@ -61,13 +61,13 @@ void setup() {
   screenManager = new ScreenManager(&display);
   
   // Add animated screens for each image pair (all images are 128x128)
-  // Using the updated RGB565 arrays from img_new
-  screenManager->addScreen("welcome", new AnimatedImageScreen("welcome", welcome_A, welcome_B, 128, 128));
-  screenManager->addScreen("play", new AnimatedImageScreen("play", play_A, play_B, 128, 128));
-  screenManager->addScreen("walk", new AnimatedImageScreen("walk", walk_A, walk_B, 128, 128));
-  screenManager->addScreen("throw", new AnimatedImageScreen("throw", throw_A, throw_B, 128, 128));
-  screenManager->addScreen("rocket", new AnimatedImageScreen("rocket", rocket_A, rocket_B, 128, 128));
-  screenManager->addScreen("shake", new AnimatedImageScreen("shake", shake_A, shake_B, 128, 128));
+  // Using the updated RGB565 arrays from img_new (with lowercase variable names)
+  screenManager->addScreen("welcome", new AnimatedImageScreen("welcome", welcome_a, welcome_b, 128, 128));
+  screenManager->addScreen("play", new AnimatedImageScreen("play", play_a, play_b, 128, 128));
+  screenManager->addScreen("walk", new AnimatedImageScreen("walk", walk_a, walk_b, 128, 128));
+  screenManager->addScreen("throw", new AnimatedImageScreen("throw", throw_a, throw_b, 128, 128));
+  screenManager->addScreen("rocket", new AnimatedImageScreen("rocket", rocket_a, rocket_b, 128, 128));
+  screenManager->addScreen("shake", new AnimatedImageScreen("shake", shake_a, shake_b, 128, 128));
   
   // Add the result screen
   resultScreen = new ResultScreen("result", "0.00 m");
