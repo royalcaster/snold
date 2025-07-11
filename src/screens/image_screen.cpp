@@ -7,24 +7,19 @@ ImageScreen::ImageScreen(const uint16_t* imageData, int width, int height, int x
 }
 
 void ImageScreen::render(Adafruit_GFX* display) {
-    // Clear screen
     display->fillScreen(BLACK);
     
-    // Calculate position
     int drawX = x;
     int drawY = y;
     
     if (drawX == -1) {
-        // Center horizontally
         drawX = (128 - width) / 2;
     }
     
     if (drawY == -1) {
-        // Center vertically
         drawY = (128 - height) / 2;
     }
     
-    // Draw image using the existing drawBitmap function
     drawBitmap(display, imageData, drawX, drawY, width, height);
 }
 

@@ -21,7 +21,7 @@ private:
     int height;
     unsigned long lastToggle;
     bool showingA;
-    static const unsigned long TOGGLE_INTERVAL = 500; // 0.5 seconds in ms
+    static const unsigned long TOGGLE_INTERVAL = 500;
 };
 
 #endif // ANIMATED_IMAGE_SCREEN_H 

@@ -22,7 +22,7 @@ namespace {
             }
         }
 
-        return -1; // Return -1 for characters not in the font
+        return -1;
     }
 
 }

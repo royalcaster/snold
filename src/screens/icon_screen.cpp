@@ -7,24 +7,19 @@ IconScreen::IconScreen(const uint16_t* iconData, int width, int height, uint16_t
 }
 
 void IconScreen::render(Adafruit_GFX* display) {
-    // Clear screen
     display->fillScreen(BLACK);
     
-    // Calculate position
     int drawX = x;
     int drawY = y;
     
     if (drawX == -1) {
-        // Center horizontally
         drawX = (128 - width) / 2;
     }
     
     if (drawY == -1) {
-        // Center vertically
         drawY = (128 - height) / 2;
     }
     
-    // Draw icon using the existing drawBitmap function
     drawBitmap(display, iconData, drawX, drawY, width, height);
 }
 

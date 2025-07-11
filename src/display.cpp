@@ -7,11 +7,8 @@
 #include <freertos/task.h>
 #endif
 
-// --- HARDWARE OBJECT DEFINITION ---
 Adafruit_SSD1351 display = Adafruit_SSD1351(
   OLED_WIDTH, OLED_HEIGHT, &SPI, OLED_CS, OLED_DC, OLED_RST);
-
-// --- ESP32 NATIVE SPI DMA VARIABLES ---
 #ifdef ESP32
 static spi_device_handle_t spi_device;
 static volatile bool spi_transfer_done = true;
@@ -23,12 +20,9 @@ static void IRAM_ATTR spi_post_transfer_callback(spi_transaction_t *t) {
 }
 #endif
 
-// --- FUNCTION IMPLEMENTATIONS ---
 
-/**
- * @brief Initializes ESP32 native SPI with DMA for MAXIMUM performance
- * This bypasses Arduino SPI completely for 10x+ speed improvement
- */
+
+// Initialize ESP32 native SPI with DMA
 void initializeNativeSPIDMA() {
 #ifdef ESP32
     if (dma_initialized) return;
@@ -76,10 +70,7 @@ void initializeNativeSPIDMA() {
 #endif
 }
 
-/**
- * @brief ULTRA-FAST DMA transfer function
- * This uses ESP32 hardware DMA for maximum speed
- */
+// DMA transfer function
 void sendDataDMA(const uint8_t* data, size_t length, bool wait_for_completion) {
 #ifdef ESP32
     if (!dma_initialized) {
@@ -118,29 +109,16 @@ void sendDataDMA(const uint8_t* data, size_t length, bool wait_for_completion) {
 #endif
 }
 
-/**
- * @brief FASTEST possible image transfer using DMA
- * This is the ultimate performance function
- */
+// Send image via DMA
 void sendImageDMA(const uint16_t* imageData, int width, int height) {
 #ifdef ESP32
     if (!dma_initialized) {
-        Serial.println("DMA not initialized - falling back to regular method");
         return;
     }
     
-    size_t imageSize = width * height * 2;  // 2 bytes per RGB565 pixel
+    size_t imageSize = width * height * 2;
     
-    // Set display window (this would need actual SSD1351 commands)
-    // For now, we assume the display is already configured
-    
-    // Send image data via DMA - this is BLAZINGLY FAST
-    sendDataDMA((const uint8_t*)imageData, imageSize, false);  // Don't wait - let it run in background
-    
-    Serial.printf("DMA image transfer started: %dx%d pixels (%d bytes)\n", width, height, imageSize);
-#else
-    Serial.println("DMA not available - using regular display method");
-    // Could fall back to regular bitmap drawing here
+    sendDataDMA((const uint8_t*)imageData, imageSize, false);
 #endif
 }
 
@@ -148,30 +126,24 @@ void sendImageDMA(const uint16_t* imageData, int width, int height) {
  * @brief Benchmark DMA vs regular SPI performance
  */
 void benchmarkDMAPerformance() {
-    Serial.println("=== DMA PERFORMANCE BENCHMARK ===");
-    
 #ifdef ESP32
-    // Create test image data
     const int TEST_SIZE = 128 * 128;
     uint16_t* testImage = (uint16_t*)malloc(TEST_SIZE * sizeof(uint16_t));
     if (!testImage) {
-        Serial.println("Failed to allocate test image memory");
         return;
     }
     
-    // Fill with test pattern
     for (int i = 0; i < TEST_SIZE; i++) {
-        testImage[i] = (i % 2) ? 0xF800 : 0x001F;  // Red/Blue checkerboard
+        testImage[i] = (i % 2) ? 0xF800 : 0x001F;
     }
     
     const int ITERATIONS = 10;
     
-    // Test DMA performance
     if (dma_initialized) {
         uint32_t startTime = millis();
         for (int i = 0; i < ITERATIONS; i++) {
             sendImageDMA(testImage, 128, 128);
-            while (!spi_transfer_done) {  // Wait for completion
+            while (!spi_transfer_done) {
                 vTaskDelay(1);
             }
         }
@@ -180,7 +152,6 @@ void benchmarkDMAPerformance() {
         Serial.printf("DMA Performance: %.1fms per frame (%.1f FPS)\n", dmaTime / (float)ITERATIONS, dmaFPS);
     }
     
-    // Test regular drawRGBBitmap performance
     uint32_t startTime = millis();
     for (int i = 0; i < ITERATIONS; i++) {
         display.drawRGBBitmap(0, 0, testImage, 128, 128);
@@ -189,48 +160,29 @@ void benchmarkDMAPerformance() {
     float regularFPS = (ITERATIONS * 1000.0) / regularTime;
     Serial.printf("Regular Performance: %.1fms per frame (%.1f FPS)\n", regularTime / (float)ITERATIONS, regularFPS);
     
-    if (dma_initialized && regularTime > 0) {
-        float speedup = (float)regularTime / (millis() - startTime);
-        Serial.printf("DMA SPEEDUP: %.1fx faster!\n", speedup);
-    }
-    
     free(testImage);
-#else
-    Serial.println("DMA not available on this platform - skipping DMA benchmark");
 #endif
-    Serial.println("=== BENCHMARK COMPLETE ===");
 }
 
-/**
- * @brief Initializes the OLED display (SSD1351) with optimized SPI settings
- */
+// Initialize OLED display
 void initializeDisplay() {
     // First initialize native DMA
     initializeNativeSPIDMA();
     
-    // PERFORMANCE OPTIMIZATION: Set maximum SPI speed before display initialization
-    // SSD1351 supports up to 20MHz SPI clock (datasheet spec)
-    // ESP32 can handle this speed reliably with proper wiring
-    SPI.setFrequency(20000000);  // 20MHz - maximum stable speed for SSD1351
-    SPI.setDataMode(SPI_MODE0);  // Clock polarity/phase optimization
-    SPI.setBitOrder(MSBFIRST);   // Most significant bit first
+    SPI.setFrequency(20000000);
+    SPI.setDataMode(SPI_MODE0);
+    SPI.setBitOrder(MSBFIRST);
     
     display.begin();
     display.setRotation(1);  // Rotate 90 degrees clockwise
     
-    // Clear screen immediately for faster startup
     display.fillScreen(BLACK);
     display.setCursor(0, 0);
     display.setTextSize(1);
     display.setTextColor(WHITE);
-    
-    Serial.println("Display initialized with 20MHz SPI + 40MHz DMA!");
 }
 
-/**
- * @brief Optimized display initialization with custom SPI speed
- * @param spiSpeed Custom SPI frequency in Hz (default: 20MHz)
- */
+// Initialize display with custom SPI speed
 void initializeDisplayCustomSpeed(uint32_t spiSpeed) {
     Serial.printf("Initializing display with %dMHz SPI...\n", spiSpeed / 1000000);
     
@@ -248,33 +200,26 @@ void initializeDisplayCustomSpeed(uint32_t spiSpeed) {
     Serial.printf("Display ready at %dMHz SPI\n", spiSpeed / 1000000);
 }
 
-/**
- * @brief Performance test function to measure display refresh rates
- */
+// Benchmark display performance
 void benchmarkDisplay() {
-    Serial.println("=== DISPLAY PERFORMANCE BENCHMARK ===");
-    
-    uint32_t startTime, endTime;
     const int TEST_ITERATIONS = 10;
     
-    // Test 1: fillScreen performance
-    startTime = millis();
+    uint32_t startTime = millis();
     for (int i = 0; i < TEST_ITERATIONS; i++) {
         display.fillScreen(i % 2 ? WHITE : BLACK);
     }
-    endTime = millis();
+    uint32_t endTime = millis();
     float fillScreenTime = (endTime - startTime) / (float)TEST_ITERATIONS;
     Serial.printf("fillScreen(): %.1fms per frame (%.1f FPS)\n", fillScreenTime, 1000.0 / fillScreenTime);
     
-    // Test 2: drawRGBBitmap performance (simulated with small bitmap)
-    uint16_t testBitmap[128*4]; // 4 rows of test data
+    uint16_t testBitmap[128*4];
     for (int i = 0; i < 128*4; i++) {
-        testBitmap[i] = 0xF800; // Red pixels
+        testBitmap[i] = 0xF800;
     }
     
     startTime = millis();
     for (int i = 0; i < TEST_ITERATIONS; i++) {
-        for (int row = 0; row < 32; row += 4) { // Draw 4-row strips
+        for (int row = 0; row < 32; row += 4) {
             display.drawRGBBitmap(0, row, testBitmap, 128, 4);
         }
     }
@@ -282,16 +227,11 @@ void benchmarkDisplay() {
     float bitmapTime = (endTime - startTime) / (float)TEST_ITERATIONS;
     Serial.printf("drawRGBBitmap(): %.1fms per frame (%.1f FPS)\n", bitmapTime, 1000.0 / bitmapTime);
     
-    // Test 3: DMA performance comparison
     benchmarkDMAPerformance();
-    
-    Serial.println("=== BENCHMARK COMPLETE ===");
     display.fillScreen(BLACK);
 }
 
-/**
- * @brief Displays a test message on the OLED screen
- */
+// Display test message
 void displayTest() {
   display.fillScreen(BLACK);
   display.setCursor(0, 0);
@@ -303,20 +243,16 @@ void displayTest() {
   display.setTextColor(GREEN);
   display.println("BMP388 Ready!");
   
-  delay(2000); // Show test message for 2 seconds
-  display.fillScreen(BLACK); // Clear screen
+  delay(2000);
+  display.fillScreen(BLACK);
 }
 
-/**
- * @brief Clears the display to black
- */
+// Clear display
 void clearDisplay() {
   display.fillScreen(BLACK);
 }
 
-/**
- * @brief Shows a simple message on the display
- */
+// Show message on display
 void showMessage(const char* message, uint16_t color) {
   display.fillScreen(BLACK);
   display.setCursor(0, 0);

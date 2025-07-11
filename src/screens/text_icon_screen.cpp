@@ -10,23 +10,17 @@ TextIconScreen::TextIconScreen(const char* text, const uint16_t* iconData, int i
 }
 
 void TextIconScreen::render(Adafruit_GFX* display) {
-    // Clear screen
     display->fillScreen(BLACK);
     
-    // Calculate positions
-    // Icon goes in the upper half
     int iconX = (128 - iconWidth) / 2;
-    int iconY = 20; // Fixed position in upper area
+    int iconY = 20;
     
-    // Text goes below the icon
-    int textWidth = strlen(text) * 16; // 16px per character
+    int textWidth = strlen(text) * 16;
     int textX = (128 - textWidth) / 2;
-    int textY = iconY + iconHeight + 10; // 10px spacing between icon and text
+    int textY = iconY + iconHeight + 10;
     
-    // Draw icon
     drawBitmap(display, iconData, iconX, iconY, iconWidth, iconHeight);
     
-    // Draw text
     drawFatpixelText(display, text, textX, textY, textColor);
 }
 

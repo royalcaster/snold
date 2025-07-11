@@ -8,10 +8,7 @@
 #include "fonts.h"
 #include "fatpixel_font.h"
 
-// --- HARDWARE OBJECT ---
 extern Adafruit_SSD1351 display;
-
-// --- FUNCTION DECLARATIONS ---
 void initializeDisplay();
 void initializeDisplayCustomSpeed(uint32_t spiSpeed = 20000000);
 void benchmarkDisplay();
@@ -19,12 +16,12 @@ void displayTest();
 void clearDisplay();
 void showMessage(const char* message, uint16_t color = WHITE);
 
-// --- CUSTOM FONT FUNCTIONS ---
+
 void showCustomText(const char* text, int x, int y, uint16_t color = WHITE, uint8_t fontSize = FONT_SIZE_8);
 void showCustomMessage(const char* message, uint16_t color = WHITE, uint8_t fontSize = FONT_SIZE_8);
 void displayFontDemo();
 
-// DMA and performance functions
+
 void initializeNativeSPIDMA();
 void sendDataDMA(const uint8_t* data, size_t length, bool wait_for_completion);
 void sendImageDMA(const uint16_t* imageData, int width, int height);
