@@ -1,10 +1,6 @@
-# ESP32 Throw Detection Device
+# SNOLD
 
 A smart device that measures throw height using barometric pressure sensing and displays results on a color OLED screen with animated graphics.
-
-**University Project**  
-Applied Computer Science (Master's Program)  
-HTW Dresden
 
 ## 📋 Project Overview
 
@@ -195,5 +191,3 @@ This project demonstrates practical application of:
 This project is developed for educational purposes as part of the Applied Computer Science Master's program at HTW Dresden.
 
 ---
-
-**HTW Dresden** | **Applied Computer Science** | **Master's Program** 
